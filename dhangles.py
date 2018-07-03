@@ -8,6 +8,12 @@ import numpy as np
 u = mda.Universe('md_0_1.gro', 'md_0_1_noPBC1.xtc')
 bb = u.select_atoms("name CA C N")
 
+# Creates an array of atom groups that correspond to the angles
+dh_atoms = []
+for i in range(0,len(bb.atoms)-4,3):
+    dh_atoms.append(bb.atoms[i:(i+5)])
+dh_atoms = np.array(dh_atoms)
+
 # Creates a numpy array of dihedral angles
 # [ [[phi,psi]  [[phi,psi]   ...   [[phi,psi]        resid = 1
 #    [phi,psi]   [phi,psi]   ...    [phi,psi]        resid = 2
