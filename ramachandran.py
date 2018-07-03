@@ -1,24 +1,25 @@
-def phi_psi(u):
+def ramachandran(u,start,finish,r):
     import MDAnalysis as mda
-    import matplotlib.pyplot as plt
     import numpy as np
 
-    # Selects relevent backbone atoms
-    bb = u.select_atoms("name CA C N and not ((name N CA and resid 1) or (name CA C and resid {}))".format(len(u.residues)))
+    # Creates an array of resids that are used as indicies
+    resids = r.residues.resids
 
     # Creates an array that gives atom groups for respective angles
     dh_atoms = []
-    for i in range(0,len(bb.atoms)-4,3):
-        dh_atoms.append(bb.atoms[i:(i+5)])
+    for resid in resids:
+        resname = u.residues[resid-1]
+        dh_atoms.append(resname)
     dh_atoms = np.array(dh_atoms)
 
     # Creates an array of time steps that contain [phi,psi] for each residue
     dh_angles = []
-    for ts in u.trajectory:
+    for ts in u.trajectory[start:finish]:
         step = []
-        for i in range(0,len(bb.atoms)-4,3):
-            phi = bb.atoms[i:(i+4)].dihedral.value()
-            psi = bb.atoms[(i+1):(i+5)].dihedral.value()
+        for resid in resids:
+            bb = u.atoms.select_atoms("resid {}:{} and name N CA C".format((resid-1),(resid+1)))
+            phi = bb.atoms[2:6].dihedral.value()
+            psi = bb.atoms[3:7].dihedral.value()
             step.append((phi, psi))
         dh_angles.append(step)
     dh_angles = np.array(dh_angles)
