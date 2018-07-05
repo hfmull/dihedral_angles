@@ -17,10 +17,13 @@ def ramachandran(u,start,finish,r):
     for ts in u.trajectory[start:finish]:
         step = []
         for resid in resids:
-            bb = u.atoms.select_atoms("resid {}:{} and name N CA C".format((resid-1),(resid+1)))
-            phi = bb.atoms[2:6].dihedral.value()
-            psi = bb.atoms[3:7].dihedral.value()
-            step.append((phi, psi))
+            if resid > 1 and resid < u.atoms.select_atoms("protein").n_residues:
+                bb = u.atoms.select_atoms("resid {}:{} and name N CA C".format((resid-1),(resid+1)))
+                phi = bb.atoms[2:6].dihedral.value()
+                psi = bb.atoms[3:7].dihedral.value()
+                step.append((phi, psi))
+            else:
+                pass
         dh_angles.append(step)
     dh_angles = np.array(dh_angles)
 
