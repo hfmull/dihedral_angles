@@ -35,18 +35,22 @@ def ramachandran(u,r, start=None, stop=None, step=None):
     import numpy as np
 
     resids = r.residues.resids
-    bb_sel = [u.atoms.select_atoms("name C and resid {}".format(resid-1),
-                                  "name N and resid {}".format(resid),
-                                  "name CA and resid {}".format(resid),
-                                  "name C and resid {}".format(resid),
-                                  "name N and resid {}".format(resid+1))
-                     for resid in resids
-                     if resid > 1 and resid < len(u.atoms.select_atoms("protein").residues)]
+    bb_sel = [u.atoms.select_atoms(
+                  "name C and resid {}".format(resid-1),
+                  "name N and resid {}".format(resid),
+                  "name CA and resid {}".format(resid),
+                  "name C and resid {}".format(resid),
+                  "name N and resid {}".format(resid+1)
+                  )
+              for resid in resids
+              if (resid > 1 and
+                  resid < len(u.atoms.select_atoms("protein").residues))]
 
     phi_sel = [bb_sel[i][:4].dihedral for i in range(len(bb_sel))]
     psi_sel = [bb_sel[i][1:].dihedral for i in range(len(bb_sel))]
 
-    angles = np.array([[(phi_sel[i].value(), psi_sel[i].value()) for i in range(len(phi_sel))]
+    angles = np.array([[(phi_sel[i].value(), psi_sel[i].value())
+             for i in range(len(phi_sel))]
              for ts in u.trajectory[start:stop:step]])
 
     return r.residues, angles
