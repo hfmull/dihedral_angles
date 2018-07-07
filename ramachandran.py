@@ -1,11 +1,39 @@
-def ramachandran(u,r, start=None, stop=None, step=None):
-    """Generates a time series of phi and psi angles for all residues specified.
+def dihedral_calc(ags, start=None, stop=None, step=None):
+    """Calculates phi and psi angles for a list of AtomGroups over trajectory.
 
     Parameters
     ----------
-    u : Universe object
-        because of how dihedrals are calculated, residues that may not be
-        specified must be able to be referred to
+    ags : AtomGroups
+        must be a list of one or more AtomGroups containing 5 atoms in the
+        correct order (i.e. C-N-CA-C-N)
+     start : int, optional
+         starting frame of analysis
+     stop : int, optional
+         last frame of analysis plus 1
+     step : int, optional
+         step size between frames for analysis
+
+    Returns
+    -------
+    angles : numpy.ndarray
+        An array of time steps which contain (phi,psi) for all AtomGroups.
+    """
+
+    phi_sel = [ag[:4].dihedral for ag in ags]
+    psi_sel = [ag[1:].dihedral for ag in ags]
+
+    angles = np.array([[(phi.value(), psi.value())
+             for phi,psi in zip(phi_sel,psi_sel)]
+             for ts in ags.universe.trajectory[start:stop:step]])
+
+    return angles
+
+
+def ramachandran(r, start=None, stop=None, step=None):
+    """Generates time series of phi and psi angles for all residues specified.
+
+    Parameters
+    ----------
     r : AtomGroup or ResidueGroup or SegmentGroup
         some group of interest that a list of residues can be generated from
     start : int, optional
@@ -27,15 +55,13 @@ def ramachandran(u,r, start=None, stop=None, step=None):
     The list of residues can be found with x[0] (i.e. <ResidueGroup with n
     residues>) and specific residues can be foudn with x[0][resid+1].
 
-    Time steps can be found with x[1][ts] and angles for a specific residue can
-    be found with x[1][ts][resid+1]
+    Time steps can be found with x[1][ts] and angles for a specific residue
+    can be found with x[1][ts][resid+1]
     """
 
-    import MDAnalysis as mda
-    import numpy as np
-
+    protein = r.universe.atoms.select_atoms("protein")
     resids = r.residues.resids
-    bb_sel = [u.atoms.select_atoms(
+    bb_sel = [protein.select_atoms(
                   "name C and resid {}".format(resid-1),
                   "name N and resid {}".format(resid),
                   "name CA and resid {}".format(resid),
@@ -43,14 +69,7 @@ def ramachandran(u,r, start=None, stop=None, step=None):
                   "name N and resid {}".format(resid+1)
                   )
               for resid in resids
-              if (resid > 1 and
-                  resid < len(u.atoms.select_atoms("protein").residues))]
+              if 1 < resid < len(protein.residues)]
+    phi_psi = dihedral_calc(bb_sel,start=start,stop=stop,step=step)
 
-    phi_sel = [bb_sel[i][:4].dihedral for i in range(len(bb_sel))]
-    psi_sel = [bb_sel[i][1:].dihedral for i in range(len(bb_sel))]
-
-    angles = np.array([[(phi_sel[i].value(), psi_sel[i].value())
-             for i in range(len(phi_sel))]
-             for ts in u.trajectory[start:stop:step]])
-
-    return r.residues, angles
+    return r.residues, phi_psi
