@@ -70,6 +70,6 @@ def ramachandran(r, start=None, stop=None, step=None):
                   )
               for resid in resids
               if 1 < resid < len(protein.residues)]
-    phi_psi = dihedral_calc(bb_sel,start=start,stop=stop,step=step)
+    angles = dihedral_calc(bb_sel,start=start,stop=stop,step=step)
 
-    return r.residues, phi_psi
+    return r.residues, angles
