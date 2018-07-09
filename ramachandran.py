@@ -24,12 +24,12 @@ def dihedral_calc(ags, start=None, stop=None, step=None):
 
     angles = np.array([[(phi.value(), psi.value())
              for phi,psi in zip(phi_sel,psi_sel)]
-             for ts in ags.universe.trajectory[start:stop:step]])
+             for ts in ags[0].universe.trajectory[start:stop:step]])
 
     return angles
 
 
-def ramachandran(r, start=None, stop=None, step=None):
+def ramachandran(r, start=None, stop=None, step=None, plot=False):
     """Generates time series of phi and psi angles for all residues specified.
 
     Parameters
@@ -71,5 +71,17 @@ def ramachandran(r, start=None, stop=None, step=None):
               for resid in resids
               if 1 < resid < len(protein.residues)]
     angles = dihedral_calc(bb_sel,start=start,stop=stop,step=step)
+
+     if plot==True:
+        fig = plt.figure(figsize=(10,10))
+        ax1 = plt.subplot(111)
+        ax1.plot(x[1][0][:,0], x[1][0][:,1], 'ks')
+        ax1.axis([-180,180,-180,180])
+        ax1.axhline(0, color='k', lw=1)
+        ax1.axvline(0, color='k', lw=1)
+        plt.xticks(np.arange(-180,181,60))
+        plt.yticks(np.arange(-180,181,60))
+        plt.xlabel(r"$\phi$ (deg)")
+        plt.ylabel(r"$\psi$ (deg)")
 
     return r.residues, angles
