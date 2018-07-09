@@ -42,6 +42,8 @@ def ramachandran(r, start=None, stop=None, step=None, plot=False):
         last frame of analysis plus 1
     step : int, optional
         step size between frames for analysis
+    plot : bool, optional
+        if True, generates basic ramachandran plot for time series
 
     Returns
     -------
@@ -75,7 +77,6 @@ def ramachandran(r, start=None, stop=None, step=None, plot=False):
      if plot==True:
         fig = plt.figure(figsize=(10,10))
         ax1 = plt.subplot(111)
-        ax1.plot(x[1][0][:,0], x[1][0][:,1], 'ks')
         ax1.axis([-180,180,-180,180])
         ax1.axhline(0, color='k', lw=1)
         ax1.axvline(0, color='k', lw=1)
@@ -83,5 +84,7 @@ def ramachandran(r, start=None, stop=None, step=None, plot=False):
         plt.yticks(np.arange(-180,181,60))
         plt.xlabel(r"$\phi$ (deg)")
         plt.ylabel(r"$\psi$ (deg)")
+        for step in angles:
+            ax1.plot(step[:,0],step[:,1], 'ks')
 
     return r.residues, angles
